@@ -19,6 +19,7 @@ void addDictionaryEntry(int number, char *text) {
     dictionaryHead = newEntry;
 }
 
+// エラーコードを返すように関数のシグネチャを変更
 int load_dictionary(const char *filename) {
     FILE *file = fopen(filename, "r");
     char line[MAX_LINE_LENGTH];
@@ -43,17 +44,6 @@ int load_dictionary(const char *filename) {
     }
     fclose(file);
     return 0; // 成功時は0を返す
-}
-
-char *findTextForNumber(int number) {
-    DictionaryEntry *current = dictionaryHead;
-    while (current != NULL) {
-        if (current->number == number) {
-            return current->text;
-        }
-        current = current->next;
-    }
-    return NULL; // 見つからない場合
 }
 
 void free_dictionary() {
