@@ -6,6 +6,8 @@
 #include "dictionary_loader.h"
 
 #define BUFFER_SIZE 1024
+#define MAX_SECTIONS 10
+#define SECTION_LENGTH 4  // 3桁の数字 + 終端のヌル文字
 
 // 数値が正の整数であるかどうかをチェックする関数
 int is_positive_integer(const char *str) {
@@ -17,7 +19,7 @@ int is_positive_integer(const char *str) {
     return 1;
 }
 
-void convert_section_to_text(int section, char* buffer);
+void convert_section_to_text(char* sectionStr, char* buffer);
 
 char* convert_number_to_text(char* numberStr);
 
@@ -26,8 +28,6 @@ int main(int argc, char *argv[]) {
         printf("Error: Incorrect number of arguments or argument is not a positive integer.\n");
         return 1;
     }
-
-    int number = strtoull(argv[argc - 1], NULL, 10);
 
     // 辞書ファイルの処理
     if (argc == 3) {
@@ -46,10 +46,30 @@ int main(int argc, char *argv[]) {
 
 }
 
-void split_number() {
-    
-}
+void split_number(char* numberStr, char sections[MAX_SECTIONS][SECTION_LENGTH]) {
+    int numLen = strlen(numberStr);
+    int sectionIndex = 0;
 
+    // 末尾から3桁ずつセクションを取り出す
+    for (int i = numLen; i > 0; i -= 3) {
+        if (i - 3 < 0) {
+            strncpy(sections[sectionIndex], numberStr, i);
+            sections[sectionIndex][i] = '\0';  // 終端文字を追加
+        } else {
+            strncpy(sections[sectionIndex], &numberStr[i - 3], 3);
+            sections[sectionIndex][3] = '\0';  // 終端文字を追加
+        }
+        sectionIndex++;
+    }
+
+    // 逆順で格納されたセクションを正しい順序にする
+    for (int i = 0; i < sectionIndex / 2; i++) {
+        char temp[SECTION_LENGTH];
+        strcpy(temp, sections[i]);
+        strcpy(sections[i], sections[sectionIndex - i - 1]);
+        strcpy(sections[sectionIndex - i - 1], temp);
+    }
+}
 // 辞書から数字の文字列に対応するテキストを検索する関数
 char *findTextForNumber(char *numberStr) {
     DictionaryEntry *current = dictionaryHead;
@@ -105,5 +125,37 @@ char* convert_number_to_text(char* numberStr) {
 
 // この関数は数値のセクション（例: 1234 -> "one thousand two hundred thirty four"）を処理します
 void convert_section_to_text(char* sectionStr, char* buffer) {
-    // sectionStrから数値を検索し、対応するテキストをbufferに追加するロジックを実装
+    // sectionStrが空でないことを確認
+    if (sectionStr == NULL || buffer == NULL) return;
+
+    // 数値を整数に変換
+    int number = atoi(sectionStr);
+
+    // 百の位、十の位、一の位を処理
+    int hundreds = number / 100;
+    int tens = (number % 100) / 10;
+    int ones = number % 10;
+
+    // 百の位があれば処理
+    if (hundreds > 0) {
+        strcat(buffer, findTextForNumber(hundreds));
+        strcat(buffer, " hundred ");
+    }
+
+    // 10以上20未満の特殊な範囲の処理
+    if (tens == 1) {
+        int specialNumber = number % 100;
+        strcat(buffer, findTextForNumber(specialNumber));
+    } else {
+        // 十の位を処理
+        if (tens > 1) {
+            strcat(buffer, findTextForNumber(tens * 10));
+            strcat(buffer, " ");
+        }
+        // 一の位を処理
+        if (ones > 0) {
+            strcat(buffer, findTextForNumber(ones));
+        }
+    }
+    // 最後に余計な空白をトリムする処理を追加することも考慮する
 }
