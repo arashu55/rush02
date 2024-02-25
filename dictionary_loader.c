@@ -10,12 +10,11 @@
 // グローバル変数の定義
 DictionaryEntry *dictionaryHead = NULL;
 
-// 辞書エントリを連結リストに追加する関数
-void addDictionaryEntry(int number, char *text) {
+void addDictionaryEntry(char *number, char *text) {
     DictionaryEntry *newEntry = (DictionaryEntry *)malloc(sizeof(DictionaryEntry));
-    newEntry->number = number;
-    newEntry->text = strdup(text); // strdup でテキストのコピーを作成
-    newEntry->next = dictionaryHead; // 新しいエントリをリストの先頭に追加
+    strcpy(newEntry->number, number);  // 数値を文字列としてコピー
+    newEntry->text = strdup(text);
+    newEntry->next = dictionaryHead;
     dictionaryHead = newEntry;
 }
 
@@ -32,13 +31,11 @@ int load_dictionary(const char *filename) {
     char *saveptr; // strtok_r用のポインタ
     while (fgets(line, sizeof(line), file)) {
         line[strcspn(line, "\n")] = 0; // 改行文字を削除
-        
         char *token = strtok_r(line, ":", &saveptr);
         if (token) {
-            int number = atoi(token); // 数値に変換
             char *text = strtok_r(NULL, ":", &saveptr);
             if (text) {
-                addDictionaryEntry(number, text); // 連結リストに追加
+                addDictionaryEntry(token, text); // 連結リストに追加
             }
         }
     }
@@ -56,3 +53,15 @@ void free_dictionary() {
     }
     dictionaryHead = NULL; // ヘッドポインタをNULLにリセット
 }
+
+char* findTextForNumber(char* number) {
+    DictionaryEntry *current = dictionaryHead;
+    while (current != NULL) {
+        if (strcmp(current->number, number) == 0) {
+            return current->text;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
