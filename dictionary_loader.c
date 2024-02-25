@@ -54,14 +54,14 @@ void free_dictionary() {
     dictionaryHead = NULL; // ヘッドポインタをNULLにリセット
 }
 
-char* findTextForNumber(char* number) {
+// 辞書から数字の文字列に対応するテキストを検索する関数
+char *findTextForNumber(char *numberStr) {
     DictionaryEntry *current = dictionaryHead;
     while (current != NULL) {
-        if (strcmp(current->number, number) == 0) {
-            return current->text;
+        if (strcmp(current->number, numberStr) == 0) {
+            return current->text; // 対応するテキストを返す
         }
         current = current->next;
     }
-    return NULL;
+    return NULL; // 見つからなかった場合はNULLを返す
 }
-
